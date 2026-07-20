@@ -1,277 +1,325 @@
-# 🏦 Intelligent Bank Statement Information Extraction using GPT-4.1 (Vision)
+# 🏦 Intelligent Bank Statement Information Extraction using GPT-4.1 Vision
 
 ## 📌 Project Overview
 
-The **Intelligent Bank Statement Information Extraction System** is a Generative AI application developed to extract structured information from bank statement PDF documents using **OpenAI GPT-4.1 Vision (VLM)**.
+This project is an AI-powered Bank Statement Information Extraction System developed using **OpenAI GPT-4.1 Vision**, **Python**, **LangChain**, **Streamlit**, and **MySQL**.
 
-The project is designed to process bank statements uploaded by users and convert the unstructured document into structured JSON data, which is then stored in a **MySQL database** for further analysis and reporting.
+The application extracts structured information from scanned and digital bank statements and stores the extracted data into a MySQL database for downstream reporting and analytics.
 
-Since bank statements contain a large amount of information and the **GPT-4.1 Vision model has a context window limitation**, the extraction process has been divided into **two independent modules**.
-
-This approach improves extraction accuracy while avoiding context length limitations.
+Since a complete bank statement contains a large amount of information that exceeds the context window limitations of GPT-4.1 Vision, the extraction process has been divided into **two independent modules**.
 
 ---
 
-# Project Objectives
+# 🎯 Client Requirement
 
-* Extract customer and bank information from bank statements.
-* Extract transaction details separately.
-* Convert unstructured PDF documents into structured JSON.
-* Store extracted information into MySQL database.
-* Build a modular document processing pipeline using Generative AI.
+The client receives bank statements in PDF format from multiple banks.
 
----
+The manual process of identifying customer details and transaction history was:
 
-# Technologies Used
+- Time-consuming
+- Error-prone
+- Difficult to scale
+- Required manual data entry into databases
 
-| Technology              | Purpose                                         |
-| ----------------------- | ----------------------------------------------- |
-| Python                  | Application Development                         |
-| OpenAI GPT-4.1 (Vision) | Document Understanding & Information Extraction |
-| LangChain               | LLM Integration                                 |
-| Prompt Engineering      | Structured JSON Extraction                      |
-| Streamlit               | User Interface                                  |
-| MySQL                   | Data Storage                                    |
-| VS Code                 | Development Environment                         |
+The client required an AI solution capable of:
+
+- Uploading bank statement PDFs
+- Automatically extracting customer information
+- Automatically extracting transaction details
+- Storing extracted information into MySQL
+- Eliminating manual data entry
+- Improving processing speed and accuracy
 
 ---
 
-# System Workflow
+# 💡 Proposed AI Solution
 
-```text
-                 Upload Bank Statement PDF
-                           │
-                           ▼
-                  Streamlit User Interface
-                           │
-                           ▼
-                  PDF Page Extraction
-                           │
-                           ▼
-             GPT-4.1 Vision (LLM Processing)
-                           │
-             ┌─────────────┴──────────────┐
-             │                            │
-             ▼                            ▼
-      Part-1 Extraction             Part-2 Extraction
-  Basic Statement Details      Transaction Information
-             │                            │
-             └─────────────┬──────────────┘
-                           ▼
-                 Structured JSON Output
-                           │
-                           ▼
-                  MySQL Database Storage
+To solve the above problem, an AI-powered document extraction system was developed using GPT-4.1 Vision.
+
+The complete extraction pipeline was divided into two modules.
+
+---
+
+# 📂 Project Architecture
+
+```
+                        Bank Statement PDF
+                               │
+                               ▼
+                     Upload via Streamlit UI
+                               │
+                               ▼
+                    GPT-4.1 Vision (OpenAI)
+                               │
+          ┌────────────────────┴────────────────────┐
+          │                                         │
+          ▼                                         ▼
+ Module-1 Extraction                      Module-2 Extraction
+(Customer Information)                  (Transaction Details)
+          │                                         │
+          └────────────────────┬────────────────────┘
+                               │
+                               ▼
+                     Structured JSON Output
+                               │
+                               ▼
+                        MySQL Database
+                               │
+                               ▼
+                    Excel / Reporting Output
 ```
 
 ---
 
-# Project Modules
+# 📁 Project Folder Structure
 
-## Module 1 – Bank Statement Information Extraction
+```
+Intelligent-Bank-Statement-Information-Extraction-using-GPT-4.1-Vision/
+│
+├── AI Extracted Output/
+│   ├── AI Extracted Data From Bank Statements.xlsx
+│   └── excel/
+│
+├── Module 1 – Bank Statement Information Extraction/
+│   │
+│   ├── database/
+│   │
+│   ├── extraction/
+│   │
+│   ├── llm/
+│   │
+│   ├── app.py
+│   └── config.py
+│
+├── Module 2 – Transaction Information Extraction/
+│   │
+│   ├── app.py
+│   ├── main.py
+│   └── pdf_reader.py
+│
+├── uploads/
+│
+└── README.md
+```
 
-The first module extracts customer and bank-related information available in the statement.
+---
+
+# 🔹 Module 1
+
+## Objective
+
+Extract customer-related information from the uploaded bank statement.
 
 ### Extracted Fields
 
-* bank_name
-* bank_branch
-* ifsc_code
-* micr_no
-* bank_id
-* account_number
-* account_address
-* account_open_date
-* account_type
-* cif_no
-* nominee_exist
-* mobile_no
-* email_id
-* statement_date
-* from_date
-* to_date
-* customer_id
-
-The extracted information is converted into a structured JSON object and stored in the **Basic Statement Details** table in MySQL.
+- Bank Name
+- Bank Branch
+- IFSC Code
+- MICR Number
+- Bank ID
+- Account Number
+- Account Address
+- Account Opening Date
+- Account Type
+- CIF Number
+- Nominee Availability
+- Mobile Number
+- Email Address
+- Statement Date
+- Statement From Date
+- Statement To Date
+- Customer ID
 
 ---
 
-## Module 2 – Transaction Information Extraction
+# 🔹 Module 2
 
-The second module focuses only on transaction-level information.
+## Objective
+
+Extract all transaction-level information from the bank statement.
 
 ### Extracted Fields
 
-* statement_id
-* transaction_date
-* description
-* transaction_no
-* cheque_no
-* debit_amount
-* credit_amount
-* balance_amount
-
-Each transaction extracted by the LLM is inserted into the **Transaction Details** table in MySQL using the generated **statement_id**.
+- Statement ID
+- Transaction Date
+- Description
+- Transaction Number
+- Cheque Number
+- Debit Amount
+- Credit Amount
+- Balance Amount
 
 ---
 
-# Why Two Separate Modules?
+# 🗄 Database
 
-Bank statements often contain multiple pages with both customer information and transaction history.
+The extracted information is stored into a MySQL database after every successful LLM response.
 
-Processing the complete document in a single LLM request resulted in exceeding the **GPT-4.1 Vision context window**.
+This enables:
 
-To overcome this limitation, the extraction process was divided into two stages:
-
-### Part-1
-
-Extracts only the bank and customer information.
-
-### Part-2
-
-Extracts only transaction information.
-
-This modular design improves:
-
-* Extraction accuracy
-* Prompt clarity
-* Maintainability
-* Database organization
+- Data persistence
+- Reporting
+- Analytics
+- Future integrations
 
 ---
 
-# Database Design
+# ⚙ Technology Stack
 
-The application stores extracted information into MySQL.
-
-## Table 1
-
-### Basic Statement Details
-
-Stores:
-
-* Bank Information
-* Customer Information
-* Statement Information
-
-Primary Key:
-
-```
-statement_id
-```
+| Technology | Purpose |
+|------------|----------|
+| Python | Backend Development |
+| GPT-4.1 Vision | Document Understanding & Information Extraction |
+| OpenAI API | Large Language Model |
+| LangChain | LLM Orchestration |
+| Streamlit | User Interface |
+| MySQL | Database |
+| Prompt Engineering | Structured Data Extraction |
+| VS Code | Development IDE |
 
 ---
 
-## Table 2
-
-### Transaction Details
-
-Stores every transaction associated with a statement.
-
-Foreign Key:
+# 🚀 Project Workflow
 
 ```
-statement_id
-```
+Upload PDF
 
-Relationship:
-
-```
-One Statement
       │
+
+      ▼
+
+Read PDF
+
       │
-      ├──────── Transaction 1
-      ├──────── Transaction 2
-      ├──────── Transaction 3
-      ├──────── Transaction n
+
+      ▼
+
+Send PDF to GPT-4.1 Vision
+
+      │
+
+      ▼
+
+Extract Required Fields
+
+      │
+
+      ▼
+
+Validate Output
+
+      │
+
+      ▼
+
+Store into MySQL
+
+      │
+
+      ▼
+
+Generate Structured Output
 ```
 
 ---
 
-# Features
+# 📊 Output
 
-* Upload bank statement PDF
-* GPT-4.1 Vision-based document understanding
-* Prompt-engineered JSON extraction
-* Two-stage extraction pipeline
-* Automatic MySQL insertion
-* Structured storage of customer and transaction information
-* Streamlit-based user interface
+The application produces:
+
+- Structured customer information
+- Structured transaction information
+- MySQL database records
+- Excel output for reporting
 
 ---
 
-# Technical Architecture
+# ▶ How to Run
 
-```
-                   ┌──────────────────────┐
-                   │  Streamlit UI        │
-                   └──────────┬───────────┘
-                              │
-                              ▼
-                  Upload Bank Statement PDF
-                              │
-                              ▼
-                    PDF Page Processing
-                              │
-                              ▼
-                   GPT-4.1 Vision (LLM)
-                              │
-              ┌───────────────┴──────────────┐
-              │                              │
-              ▼                              ▼
-      Part-1 Prompt                  Part-2 Prompt
-(Bank Details Extraction)     (Transaction Extraction)
-              │                              │
-              ▼                              ▼
-       Structured JSON              Structured JSON
-              │                              │
-              └───────────────┬──────────────┘
-                              ▼
-                     MySQL Database
+### Clone Repository
+
+```bash
+git clone <repository-url>
 ```
 
 ---
 
-# Prompt Engineering Strategy
+### Install Dependencies
 
-Two independent prompts were designed:
-
-**Prompt 1**
-
-Focused only on extracting:
-
-* Bank Information
-* Customer Information
-* Statement Information
-
-**Prompt 2**
-
-Focused only on extracting:
-
-* Transaction Details
-
-This separation minimizes unnecessary context sent to the model and improves structured extraction quality.
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
----
+### Configure OpenAI API Key
 
-# Future Enhancements
+Create a `.env` file.
 
-* Support for multiple bank statement formats.
-* Batch processing of multiple PDFs.
-* Validation of extracted fields before database insertion.
-* Export extracted data to Excel or CSV.
-* Dashboard for viewing extracted statement summaries.
+```
+OPENAI_API_KEY=your_api_key
+```
 
 ---
 
-## Key Highlights
+### Run Streamlit
 
-* **Modular two-stage extraction pipeline** designed to handle GPT-4.1 Vision context window limitations.
-* **Prompt engineering** tailored separately for statement metadata and transaction details.
-* **Structured JSON outputs** are persisted directly into **MySQL**.
-* **Streamlit** provides a simple interface for uploading bank statement PDFs.
-* **LangChain** orchestrates interactions with the GPT-4.1 Vision model.
+Module 1
 
-This README accurately reflects the architecture and functionality you described without introducing unsupported features or assumptions beyond your stated implementation.
+```bash
+streamlit run app.py
+```
+
+Module 2
+
+```bash
+streamlit run app.py
+```
+
+---
+
+# ✅ Features
+
+- AI-powered bank statement extraction
+- GPT-4.1 Vision integration
+- Streamlit-based user interface
+- Structured JSON extraction
+- MySQL database integration
+- Excel output generation
+- Modular extraction approach
+- Prompt engineering for structured output
+
+---
+
+# 📈 Business Benefits
+
+- Eliminates manual data entry
+- Faster document processing
+- Structured data storage
+- Reduced human errors
+- Scalable extraction workflow
+- Simplifies reporting and auditing
+
+---
+
+# 📌 Future Enhancements
+
+- Support for multiple bank formats
+- OCR integration for scanned documents
+- Batch document processing
+- REST API integration
+- Dashboard for analytics
+- Automated validation rules
+
+---
+
+# 👨‍💻 Developed By
+
+**Nagaraj Kamale**
+
+Generative AI Engineer
+
+**Tech Stack**
+
+Python • OpenAI GPT-4.1 Vision • LangChain • Prompt Engineering • Streamlit • MySQL
+````
